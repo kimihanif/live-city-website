@@ -1,0 +1,103 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { safeGetCityEnvironment } from '../../lib/appwrite';
+import { getActiveCity } from '../../lib/city';
+import { ArticleBody } from '../../components/ArticleBody';
+import { NewsCard } from '../../components/NewsCard';
+import { Img } from '../../components/Image';
+import { ArrowLeftIcon } from '../../components/Icon';
+import { tagClass, tagLabel } from '../../lib/tags';
+import { formatLongDate, readTimeMinutes } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const { safeListNewsArticles } = await import('../../lib/appwrite');
+  const { getActiveCity } = await import('../../lib/city');
+  const city = getActiveCity();
+  const news = await safeListNewsArticles(city.id, 30);
+  return news.map((article) => ({
+    params: { id: article.$id },
+    props: { article, all: news },
+  }));
+}
+
+const { article, all } = Astro.props;
+const city = getActiveCity();
+const env = await safeGetCityEnvironment(city.id);
+const related = (all as typeof article[]).filter((n) => n.$id !== article.$id).slice(0, 3);
+
+const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
+const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
+---
+
+<BaseLayout
+  title={`${article.headline} | ${city.brandName}`}
+  description={article.summary || `News from ${city.name} — ${city.brandName}`}
+  active="news"
+  ogImage={article.thumbnail_url}
+  initialTemp={initialTemp}
+  initialAqi={initialAqi}
+>
+  <section class="wrap-narrow" style="padding-top:32px">
+    <a class="detail-back" href="/news" style="text-decoration:none">
+      <ArrowLeftIcon /> News
+    </a>
+    <div class="article-photo" style="position:relative">
+      <Img src={article.thumbnail_url} alt={article.headline} category={article.category} label={article.headline} />
+    </div>
+    <div class="article-head">
+      <span class={`tag ${tagClass(article.category)}`}>{tagLabel(article.category)}</span>
+      <h1 class="title">{article.headline}</h1>
+      <div class="meta">
+        <span>{formatLongDate(article.news_date)}</span>
+        <span class="dot"></span>
+        <span>{readTimeMinutes(article.content)} min read</span>
+        <span class="dot"></span>
+        <span>By the {city.brandName} desk</span>
+      </div>
+    </div>
+    <hr style="border:none; border-top:1px solid rgba(26,23,20,0.1); margin:0 0 32px" />
+    <ArticleBody markdown={article.content} fallbackSummary={article.summary} brandName={city.brandName} />
+    {
+      article.original_url && (
+        <p style="margin-top:32px; font-size:14px; color:var(--ink-4)">
+          Source:{' '}
+          <a href={article.original_url} target="_blank" rel="noopener noreferrer" style="color:var(--gold-2)">
+            {article.source}
+          </a>
+        </p>
+      )
+    }
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="wrap" style="margin-top:64px">
+        <h3 style="font-size:22px; font-weight:800; letter-spacing:-0.5px; margin-bottom:16px">More from today</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px">
+          {related.map((n) => (
+            <NewsCard article={n} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      headline: article.headline,
+      datePublished: article.news_date,
+      dateModified: article.fetched_at,
+      image: article.thumbnail_url ? [article.thumbnail_url] : undefined,
+      author: { '@type': 'Organization', name: city.brandName },
+      publisher: {
+        '@type': 'Organization',
+        name: city.brandName,
+        logo: { '@type': 'ImageObject', url: '/favicon.svg' },
+      },
+      description: article.summary,
+    })}
+  />
+</BaseLayout>

@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { safeListNewsArticles, safeGetCityEnvironment } from '../../lib/appwrite';
+import { getActiveCity } from '../../lib/city';
+import { NewsFeature } from '../../components/NewsFeature';
+import { ChipFilter } from '../../components/ChipFilter';
+import { Img } from '../../components/Image';
+import { tagClass, tagLabel } from '../../lib/tags';
+import { relativeTime, readTimeMinutes, formatLongDate } from '../../lib/format';
+
+const city = getActiveCity();
+const [news, env] = await Promise.all([safeListNewsArticles(city.id, 30), safeGetCityEnvironment(city.id)]);
+
+const categories = ['All', ...Array.from(new Set(news.map((n) => n.category)))];
+const featured = news[0];
+const rest = news.slice(1);
+
+const today = featured?.news_date ?? new Date().toISOString().slice(0, 10);
+
+const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
+const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
+---
+
+<BaseLayout
+  title={`${city.name}, today — News | ${city.brandName}`}
+  description={`Today's news from ${city.name}. Edited by humans, never by an algorithm.`}
+  active="news"
+  initialTemp={initialTemp}
+  initialAqi={initialAqi}
+>
+  <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
+    <span class="eyebrow"><span class="dot-g"></span> Today · {formatLongDate(today)}</span>
+    <h1 class="display" style="font-size:72px; margin-top:14px">
+      {city.name}, in <span style="color:var(--gold-2)">{city.heroNewsAccent}.</span>
+    </h1>
+    <p style="font-size:18px; color:var(--ink-3); margin-top:18px; max-width:560px; line-height:1.5">
+      Local news that actually affects your day. Updated by editors in {city.name}, never by a feed.
+    </p>
+  </section>
+
+  <section class="wrap" style="padding-bottom:32px">
+    {news.length > 0 && <ChipFilter client:load categories={categories} selector="[data-news-filter]" />}
+
+    {
+      featured && (
+        <div data-news-filter data-category={featured.category} style="margin-bottom:20px">
+          <NewsFeature article={featured} showSummary />
+        </div>
+      )
+    }
+
+    {
+      rest.length > 0 && (
+        <div class="news-list">
+          {rest.map((n) => (
+            <a
+              data-news-filter
+              data-category={n.category}
+              href={`/news/${n.$id}`}
+              class="news-listrow"
+              style="text-decoration:none; color:inherit"
+            >
+              <div>
+                <span class={`tag ${tagClass(n.category)}`}>{tagLabel(n.category)}</span>
+                <h4>{n.headline}</h4>
+                {n.summary && <p class="preview">{n.summary}</p>}
+                <span class="stamp" style="margin-top:6px; display:inline-block">
+                  {relativeTime(n.fetched_at)} · {readTimeMinutes(n.content)} min read
+                </span>
+              </div>
+              <div class="thumb" style="position:relative">
+                <Img src={n.thumbnail_url} alt={n.headline} category={n.category} />
+              </div>
+            </a>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      news.length === 0 && (
+        <div class="card" style="padding:40px; text-align:center">
+          <h3 style="font-size:22px; font-weight:800; letter-spacing:-0.5px; margin:0 0 8px">
+            No news yet today
+          </h3>
+          <p style="color:var(--ink-3); margin:0">
+            The desk publishes between 6:30 and 7:30 AM IST. Check back shortly.
+          </p>
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

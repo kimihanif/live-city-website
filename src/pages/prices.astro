@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { safeListMetalPrices, safeGetCityEnvironment } from '../lib/appwrite';
+import { getActiveCity } from '../lib/city';
+import { MetalToggle } from '../components/MetalToggle';
+import { formatLongDate } from '../lib/format';
+
+const city = getActiveCity();
+const [prices, env] = await Promise.all([safeListMetalPrices(city.id, 365), safeGetCityEnvironment(city.id)]);
+
+const ascending = [...prices].reverse();
+const series = ascending.map((p) => ({
+  date: p.price_date,
+  gold: p.gold_22k_price,
+  silver: p.silver_price,
+}));
+
+const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
+const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
+
+const todayLabel = prices[0]?.price_date ?? new Date().toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  title={`Gold & Silver rates in ${city.name} | ${city.brandName}`}
+  description={`Live 22K gold and silver rates from ${city.goldSource}. Verified daily before 10 AM.`}
+  active="prices"
+  initialTemp={initialTemp}
+  initialAqi={initialAqi}
+>
+  <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
+    <span class="eyebrow"><span class="dot-g"></span> Live rates · {formatLongDate(todayLabel)}</span>
+    <h1 class="display" style="font-size:72px; margin-top:14px">
+      {city.heroPricesLine1}<br />{city.heroPricesLine2}{' '}
+      <span style="color:var(--gold-2)">{city.heroPricesAccent}</span>
+    </h1>
+    <p style="font-size:18px; color:var(--ink-3); margin-top:18px; max-width:560px; line-height:1.5">
+      22K and silver. {city.brandName} rates, every day before 10 AM. Sourced from {city.goldSource}.
+    </p>
+  </section>
+
+  <section class="wrap" style="padding-bottom:32px">
+    {
+      series.length > 0 ? (
+        <MetalToggle client:load series={series} />
+      ) : (
+        <div class="card" style="padding:40px; text-align:center">
+          <h3 style="font-size:22px; font-weight:800; letter-spacing:-0.5px; margin:0 0 8px">
+            No rates published yet today
+          </h3>
+          <p style="color:var(--ink-3); margin:0">
+            Morning rates from {city.goldSource} land before 10 AM IST.
+          </p>
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

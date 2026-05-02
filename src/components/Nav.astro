@@ -1,0 +1,51 @@
+---
+import { getActiveCity } from '../lib/city';
+import { formatNavDate } from '../lib/format';
+import { WeatherMini } from './WeatherMini';
+import { BellIcon } from './Icon';
+
+const city = getActiveCity();
+const navDate = formatNavDate();
+
+interface Props {
+  active?: 'home' | 'news' | 'events' | 'prices';
+  initialTemp?: number | null;
+  initialAqi?: number | null;
+}
+
+const { active = 'home', initialTemp, initialAqi } = Astro.props;
+
+const links = [
+  { id: 'home', label: 'Home', href: '/' },
+  { id: 'news', label: 'News', href: '/news' },
+  { id: 'events', label: 'Events', href: '/events' },
+  { id: 'prices', label: 'Prices', href: '/prices' },
+];
+
+const playStoreHref = `https://play.google.com/store/apps/details?id=${city.playStoreId}`;
+---
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark">{city.brandMark}</span>
+      <span>{city.brandName}</span>
+      <span class="brand-sub">· {navDate}</span>
+    </a>
+    <nav class="nav-links">
+      {
+        links.map((l) => (
+          <a class={`nav-link ${active === l.id ? 'active' : ''}`} href={l.href}>
+            {l.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="nav-right">
+      <WeatherMini client:load city={city.id} initialTemp={initialTemp} initialAqi={initialAqi} />
+      <a class="btn-primary" href={playStoreHref} target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+        <BellIcon /> Get the app
+      </a>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getActiveCity } from '../lib/city';
+
+const city = getActiveCity();
+---
+
+<BaseLayout title={`Not found | ${city.brandName}`} description="Page not found.">
+  <section class="section wrap" style="padding-top:96px; padding-bottom:96px; text-align:center">
+    <span class="eyebrow"><span class="dot-g"></span> 404</span>
+    <h1 class="display" style="font-size:72px; margin-top:14px">
+      Nothing here, <span class="accent">yet.</span>
+    </h1>
+    <p style="font-size:18px; color:var(--ink-3); margin-top:18px; max-width:480px; line-height:1.5; margin-left:auto; margin-right:auto">
+      That page doesn't exist or has been retired. Try the front page, today's news, or what's on this weekend.
+    </p>
+    <div style="display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap">
+      <a class="btn-primary" href="/" style="text-decoration:none">Home</a>
+      <a class="btn-ghost" href="/news" style="text-decoration:none">News</a>
+      <a class="btn-ghost" href="/events" style="text-decoration:none">Events</a>
+    </div>
+  </section>
+</BaseLayout>

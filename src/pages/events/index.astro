@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { safeListEvents, safeGetCityEnvironment } from '../../lib/appwrite';
+import { getActiveCity } from '../../lib/city';
+import { EventFeatureSplit } from '../../components/EventFeatureSplit';
+import { EventRow } from '../../components/EventRow';
+import { ChipFilter } from '../../components/ChipFilter';
+
+const city = getActiveCity();
+const [events, env] = await Promise.all([safeListEvents(city.id, 100), safeGetCityEnvironment(city.id)]);
+
+const categories = ['All', ...Array.from(new Set(events.map((e) => e.category)))];
+const featured = events[0];
+const rest = events.slice(1);
+
+const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
+const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
+---
+
+<BaseLayout
+  title={`What's on in ${city.name} | ${city.brandName}`}
+  description={city.eventsBlurb}
+  active="events"
+  initialTemp={initialTemp}
+  initialAqi={initialAqi}
+>
+  <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
+    <span class="eyebrow"><span class="dot-g"></span> Events · this week</span>
+    <h1 class="display" style="font-size:72px; margin-top:14px">
+      What's on this <span style="color:var(--gold-2)">{city.heroEventsAccent}?</span>
+    </h1>
+    <p style="font-size:18px; color:var(--ink-3); margin-top:18px; max-width:560px; line-height:1.5">
+      {city.keywords.join(', ')} and meetups — across {city.name}. Picked by us, not by an algorithm.
+    </p>
+  </section>
+
+  <section class="wrap" style="padding-bottom:32px">
+    {events.length > 0 && <ChipFilter client:load categories={categories} selector="[data-event-filter]" />}
+
+    {
+      featured && (
+        <div data-event-filter data-category={featured.category}>
+          <EventFeatureSplit event={featured} />
+        </div>
+      )
+    }
+
+    {
+      rest.length > 0 && (
+        <div class="event-list">
+          {rest.map((ev) => (
+            <div data-event-filter data-category={ev.category}>
+              <EventRow event={ev} />
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      events.length === 0 && (
+        <div class="card" style="padding:40px; text-align:center">
+          <h3 style="font-size:22px; font-weight:800; letter-spacing:-0.5px; margin:0 0 8px">
+            No events listed for this week
+          </h3>
+          <p style="color:var(--ink-3); margin:0">Check back Friday morning — we curate the weekend slate.</p>
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

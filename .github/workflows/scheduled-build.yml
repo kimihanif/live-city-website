@@ -1,0 +1,65 @@
+name: Build and deploy both cities
+
+on:
+  schedule:
+    # Every 30 min, 08:30 IST → 18:30 IST (03:00 UTC → 13:00 UTC).
+    # Matches the backend's two daily news/events publish windows + price refreshes.
+    - cron: "*/30 3-13 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build Chennai
+        env:
+          PUBLIC_CITY: chennai
+          PUBLIC_APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+          PUBLIC_APPWRITE_PROJECT: 69c91ed0000423db1d3f
+          PUBLIC_APPWRITE_DATABASE: live_city
+          PUBLIC_APP_ID: com.hanif.city.chennai
+          PUBLIC_SITE_URL: ${{ vars.CHENNAI_SITE_URL || 'https://chennai.livecity.app' }}
+        run: |
+          npm run build
+          mv dist dist-chennai
+
+      - name: Build Bengaluru
+        env:
+          PUBLIC_CITY: bengaluru
+          PUBLIC_APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+          PUBLIC_APPWRITE_PROJECT: 69c91ed0000423db1d3f
+          PUBLIC_APPWRITE_DATABASE: live_city
+          PUBLIC_APP_ID: com.hanif.city.bengaluru
+          PUBLIC_SITE_URL: ${{ vars.BENGALURU_SITE_URL || 'https://bengaluru.livecity.app' }}
+        run: |
+          npm run build
+          mv dist dist-bengaluru
+
+      - name: Deploy Chennai
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist-chennai --project-name=livechennai --branch=main
+
+      - name: Deploy Bengaluru
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist-bengaluru --project-name=livebengaluru --branch=main

@@ -1,0 +1,154 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { safeGetCityEnvironment } from '../../lib/appwrite';
+import { getActiveCity } from '../../lib/city';
+import { EventHero } from '../../components/EventHero';
+import { EventCard } from '../../components/EventCard';
+import { BookCTA } from '../../components/BookCTA';
+import { CalIcon, PinIcon, ArrowLeftIcon } from '../../components/Icon';
+import { formatEventWhen, isPast } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const { safeListEvents } = await import('../../lib/appwrite');
+  const { getActiveCity } = await import('../../lib/city');
+  const city = getActiveCity();
+  const events = await safeListEvents(city.id, 100);
+  return events.map((event) => ({
+    params: { id: event.$id },
+    props: { event, all: events },
+  }));
+}
+
+const { event, all } = Astro.props;
+const city = getActiveCity();
+const env = await safeGetCityEnvironment(city.id);
+const others = (all as typeof event[]).filter((e) => e.$id !== event.$id).slice(0, 3);
+const past = isPast(event.event_date);
+
+const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
+const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
+---
+
+<BaseLayout
+  title={`${event.title} | ${city.brandName}`}
+  description={event.description?.slice(0, 160) || `Event in ${city.name}`}
+  active="events"
+  ogImage={event.image_url}
+  initialTemp={initialTemp}
+  initialAqi={initialAqi}
+>
+  <section class="wrap" style="padding-top:32px">
+    <a class="detail-back" href="/events" style="text-decoration:none">
+      <ArrowLeftIcon /> Events
+    </a>
+
+    {
+      past && (
+        <div
+          style="background:var(--bg-2); border:1px solid var(--card-border-strong); border-radius:12px; padding:14px 18px; margin-bottom:16px; font-size:14px; color:var(--ink-3)"
+        >
+          This event has ended.
+        </div>
+      )
+    }
+
+    <EventHero event={event} />
+
+    <div class="event-detail-grid">
+      <div>
+        <h1 style="font-size:44px; font-weight:800; letter-spacing:-1.2px; line-height:1.05; margin:0 0 24px">
+          {event.title}
+        </h1>
+
+        <div style="display:grid; gap:0; margin-bottom:32px">
+          <div class="event-info-row">
+            <div class="icon-box"><CalIcon /></div>
+            <div>
+              <div class="value">{formatEventWhen(event.event_date, event.event_time)}</div>
+              {event.duration && <div class="label">{event.duration}</div>}
+            </div>
+          </div>
+          {
+            (event.venue_name || event.venue_area) && (
+              <div class="event-info-row">
+                <div class="icon-box">
+                  <PinIcon />
+                </div>
+                <div>
+                  <div class="value">{event.venue_name ?? event.venue_area}</div>
+                  {event.venue_area && event.venue_name && <div class="label">{event.venue_area}</div>}
+                </div>
+              </div>
+            )
+          }
+        </div>
+
+        {
+          event.description && (
+            <>
+              <h3 style="font-size:22px; font-weight:800; letter-spacing:-0.5px; margin:0 0 12px">About</h3>
+              <p style="font-size:16px; line-height:1.6; color:var(--ink-2); margin:0; max-width:560px">
+                {event.description}
+              </p>
+            </>
+          )
+        }
+
+        <h3 style="font-size:22px; font-weight:800; letter-spacing:-0.5px; margin:32px 0 12px">Good to know</h3>
+        <ul style="font-size:15px; line-height:1.7; color:var(--ink-2); max-width:560px; padding-left:18px; margin:0">
+          <li>Doors open 30 minutes before start time</li>
+          <li>Valid government photo ID required at entry</li>
+          <li>Outside food and drink not permitted</li>
+          <li>Re-entry not allowed once you've left the venue</li>
+        </ul>
+      </div>
+
+      <aside>
+        <BookCTA event={event} />
+      </aside>
+    </div>
+  </section>
+
+  {
+    others.length > 0 && (
+      <section class="wrap" style="margin-top:80px">
+        <h3 style="font-size:22px; font-weight:800; letter-spacing:-0.5px; margin-bottom:16px">More events this week</h3>
+        <div class="event-grid">
+          {others.map((ev) => (
+            <EventCard event={ev} showFooter={false} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      name: event.title,
+      startDate: `${event.event_date}T${event.event_time ?? '00:00'}:00+05:30`,
+      eventStatus: past ? 'https://schema.org/EventCancelled' : 'https://schema.org/EventScheduled',
+      location: event.venue_name
+        ? {
+            '@type': 'Place',
+            name: event.venue_name,
+            address: { '@type': 'PostalAddress', addressLocality: event.venue_area ?? city.name, addressRegion: city.state, addressCountry: 'IN' },
+          }
+        : undefined,
+      image: event.image_url ? [event.image_url] : undefined,
+      description: event.description,
+      offers: event.price
+        ? {
+            '@type': 'Offer',
+            price: event.price,
+            priceCurrency: 'INR',
+            url: event.source_url,
+            availability: 'https://schema.org/InStock',
+          }
+        : undefined,
+      organizer: { '@type': 'Organization', name: city.brandName },
+    })}
+  />
+</BaseLayout>

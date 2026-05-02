@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-chennai
+dist-bengaluru
+.astro
+.env
+.env.local
+.wrangler
+.DS_Store
+*.log

@@ -1,0 +1,32 @@
+{
+  "name": "live-city-website",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "dev:chennai": "PUBLIC_CITY=chennai astro dev",
+    "dev:bengaluru": "PUBLIC_CITY=bengaluru astro dev --port 4322",
+    "build": "astro build",
+    "build:chennai": "PUBLIC_CITY=chennai astro build",
+    "build:bengaluru": "PUBLIC_CITY=bengaluru astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.2.0",
+    "@astrojs/sitemap": "^3.2.1",
+    "astro": "^5.0.0",
+    "isomorphic-dompurify": "^2.18.0",
+    "marked": "^14.1.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "wrangler": "^4.87.0"
+  }
+}
