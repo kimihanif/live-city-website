@@ -6,7 +6,7 @@ Reads the same Appwrite database as the [Android app](../live-city-android), via
 
 ## Stack
 
-- **Astro 5** with React islands for the few interactive bits (chart toggle, chip filter, ticker, weather widget).
+- **Astro 5** with React islands for the few interactive bits (chart toggle, chip filter, nav ticker).
 - **Plain `fetch`** against Appwrite REST — collections have `read("any")`, no auth needed in the browser.
 - **Static output**, deployed via `wrangler pages deploy` (Direct Upload), refreshed on a 30-minute editorial-window cron from GitHub Actions.
 
@@ -81,14 +81,14 @@ Optional repo **variables** (not secrets) for canonical URLs in OG tags + sitema
 
 | Resource | Used | Limit | Status |
 | --- | --- | --- | --- |
-| GitHub Actions minutes | ~990/month (22 ticks × 1.5 min × 30 days) | 2000/month private, unlimited public | Free |
+| GitHub Actions minutes | ~900/month (22 ticks × 1.32 min × 30 days, measured) | 2000/month private, unlimited public | Free (~45% of cap) |
 | CF Pages Direct Upload deployments | ~1320/month | Unlimited | Free |
 | CF Pages Git-build minutes | 0 | 500/month | Untouched |
 | CF Pages bandwidth | (depends on traffic) | Unlimited | Free |
 
 ## Adding a third city
 
-1. Append a new entry to `CITIES` in `src/lib/city.ts` (with all the `heroX`, `goldSource`, `eventsBlurb`, `playStoreId` fields).
+1. Append a new entry to `CITIES` in `src/lib/city.ts` (`name`, `state`, `brandName`, `goldSource`, `venues`, `eventsBlurb`, `playStoreId`, etc. — see the `CityConfig` interface for the full list).
 2. Add `'<slug>'` to the `CitySlug` union in `src/lib/types.ts`.
 3. Create a new CF Pages project in Direct Upload mode.
 4. Add a third `Build` + `Deploy` block to `.github/workflows/scheduled-build.yml`.
@@ -97,13 +97,13 @@ Optional repo **variables** (not secrets) for canonical URLs in OG tags + sitema
 
 For each city, after `npm run dev:<city>`:
 
-1. `/` shows the city's hero accent and recent news/events/prices.
-2. `/news` chip filter toggles row visibility instantly.
-3. `/news/<id>` renders headline, hero photo, markdown body, related grid.
-4. `/events` chip filter works, featured split card renders.
-5. `/events/<id>` shows hero, info rows, sticky CTA — "Book tickets" opens `events.source_url`.
-6. `/prices` toggle gold ↔ silver re-draws chart and table.
-7. Weather pill in top-right shows real `tempC` + AQI from Appwrite.
+1. `/` leads with the top news story; Events and Prices sections render below.
+2. The nav shows the live ticker (gold, silver, breaking headline, top venue) scrolling between the links and the "Get the app" button.
+3. `/news` chip filter toggles row visibility instantly; featured story sits above the list.
+4. `/news/<id>` renders headline, hero photo, markdown body, related grid.
+5. `/events` chip filter works, featured split card renders.
+6. `/events/<id>` shows hero, info rows, sticky CTA — "Book tickets" opens `events.source_url`.
+7. `/prices` toggle gold ↔ silver re-draws chart and table.
 8. View-source on `/news` shows actual headline text (SEO).
 9. Footer brand reflects city; "Get the app" links to the city's Play Store id.
 10. On a Bengaluru build, `grep -i chennai dist/index.html` returns nothing.
