@@ -1,11 +1,19 @@
 name: Build and deploy both cities
 
+run-name: ${{ inputs.reason && format('Build ({0})', inputs.reason) || github.event_name }}
+
 on:
   schedule:
-    # Every 30 min, 08:30 IST → 18:30 IST (03:00 UTC → 13:00 UTC).
-    # Matches the backend's two daily news/events publish windows + price refreshes.
-    - cron: "*/30 3-13 * * *"
+    # Daily backstop, 18:35 IST (after the evening news tick). If pipeline
+    # triggers ever stop firing, this guarantees the site is never more
+    # than 24h stale.
+    - cron: "5 13 * * *"
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why this build was triggered'
+        required: false
+        default: 'manual'
   push:
     branches: [main]
 
