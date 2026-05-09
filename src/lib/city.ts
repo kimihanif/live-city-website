@@ -8,7 +8,6 @@ export interface CityConfig {
   brandName: string;
   brandMark: string;
   timezone: string;
-  weatherDefaults: { tempC: number; aqi: number; aqiLabel: string };
   goldSource: string;
   goldSourceShort: string;
   heroHomeAccent: string;
@@ -32,7 +31,6 @@ export const CITIES: Record<CitySlug, CityConfig> = {
     brandName: 'Live Chennai',
     brandMark: 'L',
     timezone: 'IST',
-    weatherDefaults: { tempC: 29, aqi: 62, aqiLabel: 'Good' },
     goldSource: 'Chennai wholesale',
     goldSourceShort: 'Chennai',
     heroHomeAccent: 'Chennai',
@@ -55,7 +53,6 @@ export const CITIES: Record<CitySlug, CityConfig> = {
     brandName: 'Live Bengaluru',
     brandMark: 'L',
     timezone: 'IST',
-    weatherDefaults: { tempC: 24, aqi: 48, aqiLabel: 'Good' },
     goldSource: 'Commercial Street wholesale',
     goldSourceShort: 'Commercial St.',
     heroHomeAccent: 'Bengaluru',

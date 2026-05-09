@@ -5,8 +5,6 @@ interface Props {
   goldDelta?: number | null;
   silverPrice?: number | null;
   silverDelta?: number | null;
-  tempC?: number | null;
-  aqi?: number | null;
   state?: string;
   topVenue?: string;
   topHeadline?: string | null;
@@ -27,8 +25,6 @@ export function LiveTicker({
   goldDelta,
   silverPrice,
   silverDelta,
-  tempC,
-  aqi,
   state,
   topVenue,
   topHeadline,
@@ -45,13 +41,6 @@ export function LiveTicker({
     items.push(
       <>
         <strong>SILVER</strong> ₹{silverPrice.toLocaleString('en-IN')} {fmtDelta(silverDelta)}
-      </>,
-    );
-  }
-  if (tempC != null && aqi != null) {
-    items.push(
-      <>
-        <strong>WEATHER</strong> {Math.round(tempC)}°C · AQI {aqi}
       </>,
     );
   }

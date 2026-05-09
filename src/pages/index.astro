@@ -1,11 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import {
-  safeListNewsArticles,
-  safeListEvents,
-  safeListMetalPrices,
-  safeGetCityEnvironment,
-} from '../lib/appwrite';
+import { safeListNewsArticles, safeListEvents, safeListMetalPrices } from '../lib/appwrite';
 import { getActiveCity } from '../lib/city';
 import { Sparkline } from '../components/Sparkline';
 import { LiveTicker } from '../components/LiveTicker';
@@ -19,11 +14,10 @@ import { formatINR } from '../lib/format';
 
 const city = getActiveCity();
 
-const [news, events, prices, env] = await Promise.all([
+const [news, events, prices] = await Promise.all([
   safeListNewsArticles(city.id),
   safeListEvents(city.id, 10),
   safeListMetalPrices(city.id, 30),
-  safeGetCityEnvironment(city.id),
 ]);
 
 const featured = news[0];
@@ -40,12 +34,9 @@ const oldestPrice = ascPrices[0];
 
 const goldDelta = latestPrice && prevPrice ? latestPrice.gold_22k_price - prevPrice.gold_22k_price : 0;
 const silverDelta = latestPrice && prevPrice ? latestPrice.silver_price - prevPrice.silver_price : 0;
-
-const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
-const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
 ---
 
-<BaseLayout active="home" initialTemp={initialTemp} initialAqi={initialAqi}>
+<BaseLayout active="home">
   <section class="hero wrap">
     <div class="hero-grid">
       <div class="hero-copy">
@@ -67,8 +58,6 @@ const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
           goldDelta={goldDelta}
           silverPrice={latestPrice?.silver_price ?? null}
           silverDelta={silverDelta}
-          tempC={env?.tempC ?? null}
-          aqi={env?.aqiValue ?? null}
           state={city.state}
           topVenue={city.venues[0]}
           topHeadline={featured?.headline ?? null}

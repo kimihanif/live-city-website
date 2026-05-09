@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { safeGetCityEnvironment } from '../../lib/appwrite';
 import { getActiveCity } from '../../lib/city';
 import { EventHero } from '../../components/EventHero';
 import { EventCard } from '../../components/EventCard';
@@ -21,12 +20,8 @@ export async function getStaticPaths() {
 
 const { event, all } = Astro.props;
 const city = getActiveCity();
-const env = await safeGetCityEnvironment(city.id);
 const others = (all as typeof event[]).filter((e) => e.$id !== event.$id).slice(0, 3);
 const past = isPast(event.event_date);
-
-const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
-const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
 ---
 
 <BaseLayout
@@ -34,8 +29,6 @@ const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
   description={event.description?.slice(0, 160) || `Event in ${city.name}`}
   active="events"
   ogImage={event.image_url}
-  initialTemp={initialTemp}
-  initialAqi={initialAqi}
 >
   <section class="wrap" style="padding-top:32px">
     <a class="detail-back" href="/events" style="text-decoration:none">

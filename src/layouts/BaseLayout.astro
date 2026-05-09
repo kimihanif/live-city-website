@@ -8,8 +8,6 @@ interface Props {
   title?: string;
   description?: string;
   active?: 'home' | 'news' | 'events' | 'prices';
-  initialTemp?: number | null;
-  initialAqi?: number | null;
   ogImage?: string | null;
 }
 
@@ -18,8 +16,6 @@ const {
   title = `${city.brandName} — News, Events, Gold Rates`,
   description = `News, events and gold rates from ${city.name}. In English, every morning. No clutter, no paywall.`,
   active = 'home',
-  initialTemp = city.weatherDefaults.tempC,
-  initialAqi = city.weatherDefaults.aqi,
   ogImage,
 } = Astro.props;
 
@@ -53,7 +49,7 @@ const ogImageUrl = ogImage ?? `/og-default-${city.id}.jpg`;
   </head>
   <body>
     <div class="app-bg">
-      <Nav active={active} initialTemp={initialTemp} initialAqi={initialAqi} />
+      <Nav active={active} />
       <slot />
       <Footer />
     </div>

@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { safeGetCityEnvironment } from '../../lib/appwrite';
 import { getActiveCity } from '../../lib/city';
 import { ArticleBody } from '../../components/ArticleBody';
 import { NewsCard } from '../../components/NewsCard';
@@ -22,11 +21,7 @@ export async function getStaticPaths() {
 
 const { article, all } = Astro.props;
 const city = getActiveCity();
-const env = await safeGetCityEnvironment(city.id);
 const related = (all as typeof article[]).filter((n) => n.$id !== article.$id).slice(0, 3);
-
-const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
-const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
 ---
 
 <BaseLayout
@@ -34,8 +29,6 @@ const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
   description={article.summary || `News from ${city.name} — ${city.brandName}`}
   active="news"
   ogImage={article.thumbnail_url}
-  initialTemp={initialTemp}
-  initialAqi={initialAqi}
 >
   <section class="wrap-narrow" style="padding-top:32px">
     <a class="detail-back" href="/news" style="text-decoration:none">

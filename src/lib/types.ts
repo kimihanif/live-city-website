@@ -54,22 +54,3 @@ export interface EventDoc extends AppwriteDoc {
   fetched_at: string;
 }
 
-export interface CityEnvironment extends AppwriteDoc {
-  citySlug: CitySlug;
-  fetchedAt: string;
-  tempC: number;
-  feelsLikeC: number;
-  humidity: number;
-  windKph: number;
-  weatherCode: number;
-  weatherLabel: string;
-  aqiValue: number;
-  aqiCategory: string;
-  primaryPollutant: string;
-  pm25: number | null;
-  pm10: number | null;
-  no2: number | null;
-  so2: number | null;
-  o3: number | null;
-  co: number | null;
-}

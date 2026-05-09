@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { safeListNewsArticles, safeGetCityEnvironment } from '../../lib/appwrite';
+import { safeListNewsArticles } from '../../lib/appwrite';
 import { getActiveCity } from '../../lib/city';
 import { NewsFeature } from '../../components/NewsFeature';
 import { ChipFilter } from '../../components/ChipFilter';
@@ -9,24 +9,19 @@ import { tagClass, tagLabel } from '../../lib/tags';
 import { relativeTime, readTimeMinutes, formatLongDate } from '../../lib/format';
 
 const city = getActiveCity();
-const [news, env] = await Promise.all([safeListNewsArticles(city.id, 30), safeGetCityEnvironment(city.id)]);
+const news = await safeListNewsArticles(city.id, 30);
 
 const categories = ['All', ...Array.from(new Set(news.map((n) => n.category)))];
 const featured = news[0];
 const rest = news.slice(1);
 
 const today = featured?.news_date ?? new Date().toISOString().slice(0, 10);
-
-const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
-const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
 ---
 
 <BaseLayout
   title={`${city.name}, today — News | ${city.brandName}`}
   description={`Today's news from ${city.name}. Edited by humans, never by an algorithm.`}
   active="news"
-  initialTemp={initialTemp}
-  initialAqi={initialAqi}
 >
   <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
     <span class="eyebrow"><span class="dot-g"></span> Today · {formatLongDate(today)}</span>

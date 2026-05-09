@@ -1,7 +1,6 @@
 ---
 import { getActiveCity } from '../lib/city';
 import { formatNavDate } from '../lib/format';
-import { WeatherMini } from './WeatherMini';
 import { BellIcon } from './Icon';
 
 const city = getActiveCity();
@@ -9,11 +8,9 @@ const navDate = formatNavDate();
 
 interface Props {
   active?: 'home' | 'news' | 'events' | 'prices';
-  initialTemp?: number | null;
-  initialAqi?: number | null;
 }
 
-const { active = 'home', initialTemp, initialAqi } = Astro.props;
+const { active = 'home' } = Astro.props;
 
 const links = [
   { id: 'home', label: 'Home', href: '/' },
@@ -42,7 +39,6 @@ const playStoreHref = `https://play.google.com/store/apps/details?id=${city.play
       }
     </nav>
     <div class="nav-right">
-      <WeatherMini client:load city={city.id} initialTemp={initialTemp} initialAqi={initialAqi} />
       <a class="btn-primary" href={playStoreHref} target="_blank" rel="noopener noreferrer" style="text-decoration:none">
         <BellIcon /> Get the app
       </a>

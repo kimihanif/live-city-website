@@ -1,4 +1,4 @@
-import type { CitySlug, MetalPrice, NewsArticle, EventDoc, CityEnvironment } from './types';
+import type { CitySlug, MetalPrice, NewsArticle, EventDoc } from './types';
 
 const ENDPOINT = import.meta.env.PUBLIC_APPWRITE_ENDPOINT ?? 'https://sgp.cloud.appwrite.io/v1';
 const PROJECT = import.meta.env.PUBLIC_APPWRITE_PROJECT ?? '69c91ed0000423db1d3f';
@@ -83,10 +83,6 @@ export function getEvent(id: string): Promise<EventDoc | null> {
   return getDocument<EventDoc>('events', id);
 }
 
-export function getCityEnvironment(city: CitySlug): Promise<CityEnvironment | null> {
-  return getDocument<CityEnvironment>('city_environment', city);
-}
-
 export async function safeListNewsArticles(city: CitySlug, n = 30): Promise<NewsArticle[]> {
   try {
     return await listNewsArticles(city, n);
@@ -111,14 +107,5 @@ export async function safeListMetalPrices(city: CitySlug, n = 365): Promise<Meta
   } catch (err) {
     console.warn('[appwrite] listMetalPrices failed:', err);
     return [];
-  }
-}
-
-export async function safeGetCityEnvironment(city: CitySlug): Promise<CityEnvironment | null> {
-  try {
-    return await getCityEnvironment(city);
-  } catch (err) {
-    console.warn('[appwrite] getCityEnvironment failed:', err);
-    return null;
   }
 }

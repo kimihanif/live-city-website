@@ -6,20 +6,11 @@ interface Props {
   description?: string;
   active?: 'news' | 'events';
   ogImage?: string | null;
-  initialTemp?: number | null;
-  initialAqi?: number | null;
 }
 
-const { title, description, active = 'news', ogImage, initialTemp, initialAqi } = Astro.props;
+const { title, description, active = 'news', ogImage } = Astro.props;
 ---
 
-<BaseLayout
-  title={title}
-  description={description}
-  active={active}
-  ogImage={ogImage}
-  initialTemp={initialTemp}
-  initialAqi={initialAqi}
->
+<BaseLayout title={title} description={description} active={active} ogImage={ogImage}>
   <slot />
 </BaseLayout>

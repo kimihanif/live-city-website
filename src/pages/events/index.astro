@@ -1,28 +1,23 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { safeListEvents, safeGetCityEnvironment } from '../../lib/appwrite';
+import { safeListEvents } from '../../lib/appwrite';
 import { getActiveCity } from '../../lib/city';
 import { EventFeatureSplit } from '../../components/EventFeatureSplit';
 import { EventRow } from '../../components/EventRow';
 import { ChipFilter } from '../../components/ChipFilter';
 
 const city = getActiveCity();
-const [events, env] = await Promise.all([safeListEvents(city.id, 100), safeGetCityEnvironment(city.id)]);
+const events = await safeListEvents(city.id, 100);
 
 const categories = ['All', ...Array.from(new Set(events.map((e) => e.category)))];
 const featured = events[0];
 const rest = events.slice(1);
-
-const initialTemp = env?.tempC ?? city.weatherDefaults.tempC;
-const initialAqi = env?.aqiValue ?? city.weatherDefaults.aqi;
 ---
 
 <BaseLayout
   title={`What's on in ${city.name} | ${city.brandName}`}
   description={city.eventsBlurb}
   active="events"
-  initialTemp={initialTemp}
-  initialAqi={initialAqi}
 >
   <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
     <span class="eyebrow"><span class="dot-g"></span> Events · this week</span>
