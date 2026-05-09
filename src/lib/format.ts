@@ -44,10 +44,6 @@ export function formatLongDate(iso: string | null | undefined): string {
   return `${d.getDate()} ${LONG_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-export function formatNavDate(d: Date = new Date()): string {
-  return `${WEEKDAYS_SHORT[d.getDay()]}, ${d.getDate()} ${SHORT_MONTHS[d.getMonth()]}`;
-}
-
 export function formatINR(n: number): string {
   return n.toLocaleString('en-IN');
 }

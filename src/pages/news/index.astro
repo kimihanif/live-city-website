@@ -6,7 +6,7 @@ import { NewsFeature } from '../../components/NewsFeature';
 import { ChipFilter } from '../../components/ChipFilter';
 import { Img } from '../../components/Image';
 import { tagClass, tagLabel } from '../../lib/tags';
-import { relativeTime, readTimeMinutes, formatLongDate } from '../../lib/format';
+import { relativeTime, readTimeMinutes } from '../../lib/format';
 
 const city = getActiveCity();
 const news = await safeListNewsArticles(city.id, 30);
@@ -14,8 +14,6 @@ const news = await safeListNewsArticles(city.id, 30);
 const categories = ['All', ...Array.from(new Set(news.map((n) => n.category)))];
 const featured = news[0];
 const rest = news.slice(1);
-
-const today = featured?.news_date ?? new Date().toISOString().slice(0, 10);
 ---
 
 <BaseLayout
@@ -23,17 +21,14 @@ const today = featured?.news_date ?? new Date().toISOString().slice(0, 10);
   description={`Today's news from ${city.name}. Edited by humans, never by an algorithm.`}
   active="news"
 >
-  <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
-    <span class="eyebrow"><span class="dot-g"></span> Today · {formatLongDate(today)}</span>
-    <h1 class="display" style="font-size:72px; margin-top:14px">
-      {city.name}, in <span style="color:var(--gold-2)">{city.heroNewsAccent}.</span>
-    </h1>
-    <p style="font-size:18px; color:var(--ink-3); margin-top:18px; max-width:560px; line-height:1.5">
-      Local news that actually affects your day. Updated by editors in {city.name}, never by a feed.
-    </p>
-  </section>
+  <section class="wrap" style="padding-top:36px; padding-bottom:32px">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px">
+      <h1 style="font-size:48px; font-weight:800; letter-spacing:-1.4px; margin:0; line-height:1">News</h1>
+      <span style="font-size:13px; color:var(--ink-4); font-weight:500">
+        {news.length} {news.length === 1 ? 'story' : 'stories'} today
+      </span>
+    </div>
 
-  <section class="wrap" style="padding-bottom:32px">
     {news.length > 0 && <ChipFilter client:load categories={categories} selector="[data-news-filter]" />}
 
     {

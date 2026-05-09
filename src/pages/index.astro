@@ -2,15 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { safeListNewsArticles, safeListEvents, safeListMetalPrices } from '../lib/appwrite';
 import { getActiveCity } from '../lib/city';
-import { Sparkline } from '../components/Sparkline';
-import { LiveTicker } from '../components/LiveTicker';
 import { NewsFeature } from '../components/NewsFeature';
 import { NewsRow } from '../components/NewsRow';
 import { NewsCard } from '../components/NewsCard';
 import { EventCard } from '../components/EventCard';
 import { PriceCard } from '../components/PriceCard';
 import { ArrowIcon } from '../components/Icon';
-import { formatINR } from '../lib/format';
 
 const city = getActiveCity();
 
@@ -31,87 +28,21 @@ const silverHistory = ascPrices.map((p) => p.silver_price);
 const latestPrice = prices[0];
 const prevPrice = prices[1];
 const oldestPrice = ascPrices[0];
-
-const goldDelta = latestPrice && prevPrice ? latestPrice.gold_22k_price - prevPrice.gold_22k_price : 0;
-const silverDelta = latestPrice && prevPrice ? latestPrice.silver_price - prevPrice.silver_price : 0;
 ---
 
 <BaseLayout active="home">
-  <section class="hero wrap">
-    <div class="hero-grid">
-      <div class="hero-copy">
-        <span class="eyebrow"><span class="dot-g"></span> {city.brandName}</span>
-        <h1 class="display">All of <span class="accent">{city.heroHomeAccent}</span>,<br />in one read.</h1>
-        <p class="tagline">
-          News that affects your day. Events worth showing up for. The day's gold rate. In English — every morning, no
-          clutter.
-        </p>
-        <div class="hero-cta">
-          <a class="btn-primary" href="/news" style="text-decoration:none">Read today's news <ArrowIcon /></a>
-          <a class="btn-ghost" href="/events" style="text-decoration:none">What's on this weekend</a>
-        </div>
-      </div>
-      <div class="hero-rail">
-        <LiveTicker
-          client:visible
-          goldPrice={latestPrice?.gold_22k_price ?? null}
-          goldDelta={goldDelta}
-          silverPrice={latestPrice?.silver_price ?? null}
-          silverDelta={silverDelta}
-          state={city.state}
-          topVenue={city.venues[0]}
-          topHeadline={featured?.headline ?? null}
-        />
-        {
-          latestPrice && (
-            <div class="card" style="padding:18px 22px; display:flex; align-items:center; gap:18px">
-              <div style="display:flex; flex-direction:column; gap:4px; flex:1">
-                <span class="eyebrow" style="color:var(--ink-4)">Gold 22K · per gram</span>
-                <span style="font-size:24px; font-weight:800; letter-spacing:-0.6px">
-                  ₹{formatINR(latestPrice.gold_22k_price)}
-                  {goldDelta !== 0 && (
-                    <span
-                      style={`font-size:12px; color:${goldDelta > 0 ? 'var(--green)' : 'var(--red)'}; font-weight:700; margin-left:6px`}
-                    >
-                      {goldDelta > 0 ? '▴' : '▾'} ₹{Math.abs(Math.round(goldDelta))}
-                    </span>
-                  )}
-                </span>
-              </div>
-              <Sparkline data={goldHistory.slice(-14)} width={120} height={40} />
-              <a class="section-link" href="/prices">
-                Prices <ArrowIcon />
-              </a>
-            </div>
-          )
-        }
-      </div>
-    </div>
-  </section>
-
   {
-    news.length > 0 && (
-      <section class="section wrap">
-        <div class="section-meta">
-          <div>
-            <span class="eyebrow">
-              <span class="dot-g" /> Today's news
-            </span>
-            <h2 class="section-title" style="margin-top:10px">
-              The things that <span class="accent">matter</span> today.
-            </h2>
-            <p style="margin-top:14px">
-              Edited by humans in {city.name}. We pick what affects your commute, your wallet, your weekend — not what
-              trends.
-            </p>
-          </div>
+    news.length > 0 ? (
+      <section class="wrap" style="padding-top:36px; padding-bottom:32px">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px">
+          <h2 style="font-size:40px; font-weight:800; letter-spacing:-1.2px; margin:0; line-height:1">News</h2>
           <a class="section-link" href="/news">
             All news <ArrowIcon />
           </a>
         </div>
 
         <div class="news-hero">
-          {featured && <NewsFeature article={featured} />}
+          {featured && <NewsFeature article={featured} showSummary />}
           <div class="news-side">
             {sideNews.map((n) => (
               <NewsRow article={n} />
@@ -127,20 +58,13 @@ const silverDelta = latestPrice && prevPrice ? latestPrice.silver_price - prevPr
           </div>
         )}
       </section>
-    )
-  }
-
-  {
-    news.length === 0 && (
-      <section class="section wrap">
+    ) : (
+      <section class="wrap" style="padding-top:48px; padding-bottom:32px">
         <div class="card" style="padding:32px; text-align:center">
-          <span class="eyebrow">
-            <span class="dot-g" /> Today's edition
-          </span>
-          <h2 class="section-title" style="margin-top:10px">
-            Today's news publishes at <span class="accent">7 AM IST</span>.
+          <h2 style="font-size:32px; font-weight:800; letter-spacing:-0.8px; margin:0 0 10px">
+            Today's news publishes at 7&nbsp;AM&nbsp;IST
           </h2>
-          <p style="margin-top:14px">
+          <p style="margin:0; color:var(--ink-3)">
             The {city.brandName} desk is editing this morning's stories. Check back shortly.
           </p>
         </div>
@@ -150,17 +74,9 @@ const silverDelta = latestPrice && prevPrice ? latestPrice.silver_price - prevPr
 
   {
     topEvents.length > 0 && (
-      <section class="section wrap" style="padding-top:32px">
-        <div class="section-meta">
-          <div>
-            <span class="eyebrow">
-              <span class="dot-g" /> What's on
-            </span>
-            <h2 class="section-title" style="margin-top:10px">
-              Worth <span class="accent">showing up</span> for.
-            </h2>
-            <p style="margin-top:14px">{city.eventsBlurb}</p>
-          </div>
+      <section class="wrap" style="padding-top:16px; padding-bottom:32px">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px">
+          <h2 style="font-size:40px; font-weight:800; letter-spacing:-1.2px; margin:0; line-height:1">Events</h2>
           <a class="section-link" href="/events">
             All events <ArrowIcon />
           </a>
@@ -176,17 +92,9 @@ const silverDelta = latestPrice && prevPrice ? latestPrice.silver_price - prevPr
 
   {
     latestPrice && (
-      <section class="section wrap" style="padding-top:32px">
-        <div class="section-meta">
-          <div>
-            <span class="eyebrow">
-              <span class="dot-g" /> Live rates
-            </span>
-            <h2 class="section-title" style="margin-top:10px">
-              {city.heroPricesLine1.replace(/,$/, '')}, by the <span class="accent">gram</span>.
-            </h2>
-            <p style="margin-top:14px">22K and silver — verified daily from {city.goldSource}, before 10 AM.</p>
-          </div>
+      <section class="wrap" style="padding-top:16px; padding-bottom:48px">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px">
+          <h2 style="font-size:40px; font-weight:800; letter-spacing:-1.2px; margin:0; line-height:1">Prices</h2>
           <a class="section-link" href="/prices">
             Full charts <ArrowIcon />
           </a>

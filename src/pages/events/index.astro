@@ -19,17 +19,14 @@ const rest = events.slice(1);
   description={city.eventsBlurb}
   active="events"
 >
-  <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
-    <span class="eyebrow"><span class="dot-g"></span> Events · this week</span>
-    <h1 class="display" style="font-size:72px; margin-top:14px">
-      What's on this <span style="color:var(--gold-2)">{city.heroEventsAccent}?</span>
-    </h1>
-    <p style="font-size:18px; color:var(--ink-3); margin-top:18px; max-width:560px; line-height:1.5">
-      {city.keywords.join(', ')} and meetups — across {city.name}. Picked by us, not by an algorithm.
-    </p>
-  </section>
+  <section class="wrap" style="padding-top:36px; padding-bottom:32px">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px">
+      <h1 style="font-size:48px; font-weight:800; letter-spacing:-1.4px; margin:0; line-height:1">Events</h1>
+      <span style="font-size:13px; color:var(--ink-4); font-weight:500">
+        {events.length} {events.length === 1 ? 'event' : 'events'} listed
+      </span>
+    </div>
 
-  <section class="wrap" style="padding-bottom:32px">
     {events.length > 0 && <ChipFilter client:load categories={categories} selector="[data-event-filter]" />}
 
     {
