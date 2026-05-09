@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { safeListMetalPrices } from '../lib/appwrite';
 import { getActiveCity } from '../lib/city';
 import { MetalToggle } from '../components/MetalToggle';
-import { formatLongDate } from '../lib/format';
 
 const city = getActiveCity();
 const prices = await safeListMetalPrices(city.id, 365);
@@ -14,8 +13,6 @@ const series = ascending.map((p) => ({
   gold: p.gold_22k_price,
   silver: p.silver_price,
 }));
-
-const todayLabel = prices[0]?.price_date ?? new Date().toISOString().slice(0, 10);
 ---
 
 <BaseLayout
@@ -23,18 +20,14 @@ const todayLabel = prices[0]?.price_date ?? new Date().toISOString().slice(0, 10
   description={`Live 22K gold and silver rates from ${city.goldSource}. Verified daily before 10 AM.`}
   active="prices"
 >
-  <section class="section wrap" style="padding-top:48px; padding-bottom:24px">
-    <span class="eyebrow"><span class="dot-g"></span> Live rates · {formatLongDate(todayLabel)}</span>
-    <h1 class="display" style="font-size:72px; margin-top:14px">
-      {city.heroPricesLine1}<br />{city.heroPricesLine2}{' '}
-      <span style="color:var(--gold-2)">{city.heroPricesAccent}</span>
-    </h1>
-    <p style="font-size:18px; color:var(--ink-3); margin-top:18px; max-width:560px; line-height:1.5">
-      22K and silver. {city.brandName} rates, every day before 10 AM. Sourced from {city.goldSource}.
-    </p>
-  </section>
+  <section class="wrap" style="padding-top:36px; padding-bottom:32px">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px">
+      <h1 style="font-size:48px; font-weight:800; letter-spacing:-1.4px; margin:0; line-height:1">Prices</h1>
+      <span style="font-size:13px; color:var(--ink-4); font-weight:500">
+        Sourced from {city.goldSource}
+      </span>
+    </div>
 
-  <section class="wrap" style="padding-bottom:32px">
     {
       series.length > 0 ? (
         <MetalToggle client:load series={series} />

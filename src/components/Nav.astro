@@ -1,10 +1,10 @@
 ---
 import { getActiveCity } from '../lib/city';
-import { formatNavDate } from '../lib/format';
 import { BellIcon } from './Icon';
+import { LiveTicker } from './LiveTicker';
+import { safeListMetalPrices, safeListNewsArticles } from '../lib/appwrite';
 
 const city = getActiveCity();
-const navDate = formatNavDate();
 
 interface Props {
   active?: 'home' | 'news' | 'events' | 'prices';
@@ -20,6 +20,17 @@ const links = [
 ];
 
 const playStoreHref = `https://play.google.com/store/apps/details?id=${city.playStoreId}`;
+
+const [tickerPrices, tickerNews] = await Promise.all([
+  safeListMetalPrices(city.id, 2),
+  safeListNewsArticles(city.id, 1),
+]);
+
+const latest = tickerPrices[0];
+const prev = tickerPrices[1];
+const goldDelta = latest && prev ? latest.gold_22k_price - prev.gold_22k_price : 0;
+const silverDelta = latest && prev ? latest.silver_price - prev.silver_price : 0;
+const topHeadline = tickerNews[0]?.headline ?? null;
 ---
 
 <header class="nav">
@@ -27,7 +38,6 @@ const playStoreHref = `https://play.google.com/store/apps/details?id=${city.play
     <a class="brand" href="/">
       <span class="brand-mark">{city.brandMark}</span>
       <span>{city.brandName}</span>
-      <span class="brand-sub">· {navDate}</span>
     </a>
     <nav class="nav-links">
       {
@@ -38,6 +48,18 @@ const playStoreHref = `https://play.google.com/store/apps/details?id=${city.play
         ))
       }
     </nav>
+    <div class="nav-ticker">
+      <LiveTicker
+        client:visible
+        goldPrice={latest?.gold_22k_price ?? null}
+        goldDelta={goldDelta}
+        silverPrice={latest?.silver_price ?? null}
+        silverDelta={silverDelta}
+        state={city.state}
+        topVenue={city.venues[0]}
+        topHeadline={topHeadline}
+      />
+    </div>
     <div class="nav-right">
       <a class="btn-primary" href={playStoreHref} target="_blank" rel="noopener noreferrer" style="text-decoration:none">
         <BellIcon /> Get the app
